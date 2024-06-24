@@ -1,85 +1,8 @@
 local byte = 1
 local short = 2
 local int = 4
-local str = 999
-
-local Ubyte = 11
-
-local versionFields = {
-   [0] = {
-      header = {
-         {"length", short},
-	      {"layer-count", short},
-   	   {"name", str},
-   	   {"author", str},
-   	   {"OG-author", str},
-   	   {"description", str},
-   	   {"tempo", short},
-   	   {"auto-saving", byte},
-   	   {"auto-saving-dur", byte},
-   	   {"time-signature", byte},
-   	   {"minutes-spent", int},
-   	   {"leftclick", int},
-   	   {"rightclick", int},
-   	   {"noteblocks-added", int},
-   	   {"noteblocks-removed", int},
-   	   {"OG-filename", str},
-      },
-        
-      notes = {
-         {"jumps-tick", short},
-         {"jumpts-layer", short},
-         {"instrument", byte},
-         {"key", byte}
-      },
-        
-      layers = {
-         {"name", str},
-         {"volume", byte}
-      },
-      instruments = {
-         {"name", str},
-         {"file", str},
-         {"key", byte},
-         {"piano", byte}
-      }
-    },
-    [1] = {
-        header = {
-            [1] = {"classic", short, "replace"},
-            [2] = {"NBSversion", byte, "push"},
-            [3] = {"vanilla-instrument-count", byte}
-        }
-    },
-    [2] = {
-        layers = {
-            [3] = {"stereo", Ubyte, "push"}
-        }
-    },
-    [3] = {
-        header = {
-            [4] = {"length", short, "push"}
-        },
-        
-        layers = {
-            [2] = {"lock", byte, "push"},
-        },
-        
-        notes = {
-            [5] = {"velocity", byte, "push"},
-            [6] = {"panning", byte, "push"},
-            [7] = {"pitch", short, "push"}
-        }
-    },
-    [4] = {
-        header = {
-            [20] = {"loop", byte, "push"},
-            [21] = {"loop-count", byte, "push"},
-            [22] = {"loop-start", short, "push"}
-        }
-    },
-    [5] = {}
-}
+local str = -2
+local Ubyte = -1
 
 function table.len(tbl)
     local x = 0
@@ -87,19 +10,6 @@ function table.len(tbl)
     return x 
 end
 
-function table.modify(tbl, mods)
-    for k, modblock in pairs(mods) do
-        local min = 99999
-        for i,_ in pairs(modblock) do if i < min then min = i end end
-        local len = table.len(modblock)
-        for I=1,len do
-            local i = min + I - 1
-            local mod = modblock[i]
-            if mod[3] == "replace" then tbl[k][i] = mod
-            else table.insert(tbl[k], i, mod) end
-        end
-    end
-end
 
 function bytesToInt(str, signed)
    local bytes = {}
@@ -151,37 +61,18 @@ function readPart(fields, size, file)
    return part
 end
 
-function table.copy(original)
-	local copy = {}
-	for k, v in pairs(original) do
-		if type(v) == "table" then
-			v = table.copy(v)
-		end
-		copy[k] = v
-	end
-	return copy
-end
-
 return function(file) 
-   local fields = table.copy(versionFields[0])
-   
    file = io.open(file, "rb")
-
-   print(file, " pls no nil man")
-
+   
    local classic = read(file, short)
    
-   print(classic)
-   
    if classic == 0 then
-       local version = read(file, byte)
-       print(version)
-       for i=1,version do
-           table.modify(fields, versionFields[i])
-       end
-   end 
-   
+       version = read(file, byte)
+   end
+
    file:seek("set", 0)
+
+   local fields = require("fields")(version or 0)
 
    local data = {header = {}, notes = {}}
    
