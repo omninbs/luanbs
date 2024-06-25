@@ -1,14 +1,15 @@
 package = "luanbs"
 version = "1.0-1"
 source = {
-   url = "https://github.com/omninbs/luanbs"
+   url = "https://github.com/omninbs/luanbs/raw/main/luanbs-1.0-1.tar.gz"
 }
 description = {
    summary = "A simple library to read and write .nbs files from Note Block Studio.",
    license = "MIT"
 }
 dependencies = {
-   "lua >= 5.1"
+   "lua >= 5.1",
+   "luajit >= 2.0",
 }
 build = {
    type = "builtin",
