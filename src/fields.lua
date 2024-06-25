@@ -80,6 +80,17 @@ local versionFields = {
     [5] = {}
 }
 
+function table.copy(original)
+	local copy = {}
+	for k, v in pairs(original) do
+		if type(v) == "table" then
+			v = table.copy(v)
+		end
+		copy[k] = v
+	end
+	return copy
+end
+
 function table.modify(tbl, mods)
     for k, modblock in pairs(mods) do
         local min = 99999
@@ -95,7 +106,7 @@ function table.modify(tbl, mods)
 end
 
 return function(version)
-   local fields = versionFields[0]
+   local fields = table.copy(versionFields[0])
    for i=1,version do
       table.modify(fields, versionFields[i])
    end

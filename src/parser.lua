@@ -78,23 +78,35 @@ return function(file)
    
    -- header
    data.header = readPart(fields.header, 1, file)[1]
+
+   data.header.version = version
    
    -- notes
    local i = 1
    local note = {}
    local b = file:read(short)
+   local tick = -1
+   local layer = -1
 
    while not (i == 1 and bytesToInt(b) == 0) do
       note[fields.notes[i][1]] = bytesToInt(b)
       
-      if i == 1 then for _=1,bytesToInt(b) do table.insert(data.notes, "tick!") end end
+      if i == 1 then 
+         tick = tick + bytesToInt(b)
+      end
       
+      if i == 2 then
+         layer = layer + bytesToInt(b)
+      end
+
       if i == 2 and bytesToInt(b) == 0 then 
          i = 1
-         table.insert(data.notes, "tick!")
          note = {}
+         layer = -1
       elseif i == #fields.notes then 
          i = 2
+         note.tick = tick
+         note.layer = layer
          table.insert(data.notes, note)
          note = {}
       else
